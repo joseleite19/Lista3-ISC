@@ -1,10 +1,10 @@
 .data
 
-ENTRADA: .word 4, 5, 5, 7, -4, 6
+ENTRADA: .word 6, 5, 5, -7, -4, 6, 1, 2
 
-VETORZAO: .word 0:100000
-VETORAUX: .word 0:100000
-SAIDA: .word 0:100000
+VETORZAO: .word 0:10
+VETORAUX: .word 0:10
+SAIDA: .word 0:10
 
 .text
 	# s0 = n; s1 = q;s2 = VETORZAO; s3 = VETORAUX
@@ -20,7 +20,9 @@ merge:	# t0 = i; t1 = j; t2 = k; t3 = meio
 	
 	move $t1, $t3
 
-loopij:	sll $t4, $t0, 2
+loopij:	beq $t0, $t3, loopi
+	beq $t1, $a2, loopi
+	sll $t4, $t0, 2
 	add $t4, $t4, $s2
 	
 	sll $t5, $t1, 2
@@ -40,17 +42,13 @@ loopij:	sll $t4, $t0, 2
 	
 	add $t2, $t2, 1
 	add $t0, $t0, 1
-	bne $t0, $t3, loopij
-	bne $t1, $a2, loopij
-	j loopi
+	j loopij
 elseii:	sw $t8, ($t6)
 	
 	add $t2, $t2, 1
 	add $t1, $t1, 1
 	
-	bne $t0, $t3, loopij
-	bne $t1, $a2, loopij
-	j loopi
+	j loopij
 
 loopi:  beq $t0, $t3, endi
 	sll $t4, $t0, 2
@@ -102,19 +100,18 @@ endloopfinal:
 	# a1 = indice inicio; a2 = indice fim; a3 = estado
 mergesort:
 	sub $t0, $a2, $a1
-	sle $t0, $t0, 2
+	sle $t0, $t0, 1
 	bne $t0, $zero, pop
 	
 	li $t5, 2
-	sub $t9, $a2, $a1
-	ble $t9, $t5, merge
+	beq $a3, $t5, merge
 	
 	sub $sp, $sp, 4 	# push de a1, a2, e a3 na pilha
-	sw $a1, ($sp)
+	sw $a1, 0($sp)
 	sub $sp, $sp, 4
-	sw $a2, ($sp)
+	sw $a2, 0($sp)
 	sub $sp, $sp, 4
-	sw $a3, ($sp)	
+	sw $a3, 0($sp)	
 	
 	add $t0, $a1, $a2
 	div $t0, $t0, 2
@@ -135,22 +132,22 @@ endif:	move $a1, $t1
 	j mergesort
 
 voltadomerge:
+	bne $a2, $s0, pop
+	li $t8, 2
+	bne $a3, $t8, pop
+	bne $a1, $zero, pop
 	
+	j back
 	
-pop:	lw $a1, ($sp)
+pop:	lw $a3, ($sp)
 	add $sp, $sp, 4
 	lw $a2, ($sp)
 	add $sp, $sp, 4
-	lw $a3, ($sp)
+	lw $a1, ($sp)
 	add $sp, $sp, 4
 	
 	add $a3, $a3, 1
-	
-	bne $a2, $s0, recursao
-	li $t8, 2
-	bne $a3, $t8, recursao
-	j back
-recursao:
+
 	j mergesort
 
 main:	la $t0, ENTRADA

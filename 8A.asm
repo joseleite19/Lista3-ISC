@@ -1,15 +1,40 @@
 .data
 
-ENTRADA: .word 6, 5, 5, -7, -4, 6, 1, 2
+ENTRADA: .word 4, 5, 5, -7, 4, 6, 2, 0, 5, 5, 6
+SAIDA: .word 0:10
 
 VETORZAO: .word 0:10
 VETORAUX: .word 0:10
-SAIDA: .word 0:10
 
 .text
 	# s0 = n; s1 = q;s2 = VETORZAO; s3 = VETORAUX
 	j main
 
+buscab:	blt $a1,$a3,fim1
+	add $t4,$a1,$a3
+	div $t4,$t5
+	mflo $t6
+	add $t4,$t6,$zero
+	mult $t4,$t5
+	mflo $t4
+	mult $t4,$t5
+	mflo $t4
+	sub $sp,$sp,$t4	
+	lw $t7,0($sp)
+	beq $t7,$a2,fim2
+	blt $t7,$a2,cont
+	addi $a1,$t6,-1
+	add $sp,$sp,$t4
+	j buscab
+cont:	addi $a3,$t6,1
+	add $sp,$sp,$t4
+	j buscab
+	
+fim1:	li $v0, 0
+	jr $ra
+	
+fim2:	li $v0, 1
+	jr $ra
 
 merge:	# t0 = i; t1 = j; t2 = k; t3 = meio
 	move $t0, $a1
@@ -175,5 +200,34 @@ loop1:	sll $t1, $t9, 2
 	move $a2, $s0
 	li $a1, 0
 	j mergesort
-back:
+back:	li $t9, 0
+loop30:	lw $t2,($s2)
+	addi $s2,$s2,4
+	addi $sp,$sp,-4
+	sw $t2, ($sp)
 	
+	add $t9, $t9, 1
+	bne $t9, $s0, loop30
+	sll $t0, $s0, 2
+	
+	add $sp, $sp, $t0
+
+	li $t9, 0
+	la $s4, ENTRADA
+	la $s5, SAIDA
+	sll $t0, $s0, 2
+	add $s4, $s4, $t0
+loopfinal2:
+	lw $t0, ($s4)
+	
+	move $a2, $t0
+	move $a1, $s0
+	li $a3, 0
+	li $t5, 2
+
+	jal buscab
+	sw $v0, ($s5)
+	add $s5, $s5, 4
+
+	add $t9, $t9, 1
+	bne $t9, $s1, loopfinal2
